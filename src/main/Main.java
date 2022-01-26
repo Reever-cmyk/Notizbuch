@@ -13,7 +13,6 @@ public class Main {
 	private final static String key_createNote = "note";
 	private final static String key_delNote = "del";
 	private final static String key_readNote = "read";
-
 	private final static String key_stop = "stop";
 
 	private final static String key_createNotebook = "new";
