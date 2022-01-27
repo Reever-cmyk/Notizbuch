@@ -1,4 +1,4 @@
-package main;
+package object;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -6,16 +6,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-import MyIO.MyIO;
+import userinput.UserInput;
 
-public class Notizbuch {
+public class Notebook {
 	public HashMap<Integer, Notiz> notizMap;
 	public String notebookName;
 	public String relPath;
 	private static int counter = 0;
 	public int id;
+
 	
-	public Notizbuch(String notebookName) {
+	public Notebook(String notebookName) {
 		notizMap = new HashMap<>();
 		this.notebookName = notebookName;
 		this.relPath = "./Notebooks/" + this.notebookName;
@@ -23,9 +24,11 @@ public class Notizbuch {
 	}
 
 	public void addNote() {
-		String notizName = MyIO.promptAndRead("Name der Notiz eingeben.");
+		UserInput input = new UserInput();
+		System.out.println("Name der Notiz eingeben.");
+		String notizName = input.readInputString();
 		if (notizName.isBlank()) {
-			MyIO.writeln("Name darf nicht leer sein.");
+			System.out.println("Name darf nicht leer sein.");
 			addNote();
 			return;
 		}
@@ -34,27 +37,28 @@ public class Notizbuch {
 		try {
 			boolean newFile = file.createNewFile();
 			if(!newFile){
-				MyIO.writeln("Error file creation");
+				System.out.println("Error file creation");
 			}
 		} catch(IOException e) {
-			MyIO.writeln("Fehler in addNote().");
+			System.out.println("Fehler in addNote().");
 			e.printStackTrace();
 		}
-		String notizInhalt = MyIO.promptAndRead("Notiz inhalt bitte eingeben.");
+		String notizInhalt = input.readInputString();
+		System.out.println("Notiz inhalt bitte eingeben.");
 		if (notizInhalt.isBlank()) {
-			MyIO.writeln("Notiz darf nicht leer sein.");
+			System.out.println("Notiz darf nicht leer sein.");
 			addNote();
 			return;
 		}
 
 		Notiz notiz = new Notiz(notizName, this, notizInhalt, file);
 		notizMap.put(notiz.id, notiz);
-		MyIO.writeln(notiz.id + " :" + notiz.name + ": wurde erstellt.");
+		System.out.println(notiz.id + " :" + notiz.name + ": wurde erstellt.");
 		try {
 			FileWriter myWriter = new FileWriter(file);
 			myWriter.write(notizInhalt);
 			myWriter.close();
-			MyIO.writeln(notizInhalt + " wurde in " + file + " gespeichert.");
+			System.out.println(notizInhalt + " wurde in " + file + " gespeichert.");
 		} catch (IOException e) {
 			System.out.println("Fehler file-write().");
 			e.printStackTrace();
@@ -73,9 +77,9 @@ public class Notizbuch {
 	}
 
 	public void listNotes(){
-		MyIO.writeln("Liste der Notizen aus");
+		System.out.println("Liste der Notizen aus");
 		for (Notiz getNotiz : this.notizMap.values()) {
-			MyIO.writeln(getNotiz.id + ":" + getNotiz.name);
+			System.out.println(getNotiz.id + ":" + getNotiz.name);
 		}
 	}
 
@@ -83,7 +87,7 @@ public class Notizbuch {
 		try {
 			Scanner myReader = new Scanner(notiz.notizPfad);
 			String data = myReader.nextLine();
-			MyIO.writeln(data);
+			System.out.println(data);
 			myReader.close();
 		} catch (FileNotFoundException e) {
 			System.out.println("Fehler: file-read().");
@@ -105,6 +109,25 @@ public class Notizbuch {
 		for(Notiz notiz:sortedArray){
 			this.notizMap.put(notiz.id, notiz);
 		}
+	}
+
+	public Notiz chooseNote(){
+		System.out.println("Liste der Notizen aus");
+		for (Notiz getNotiz : notizMap.values()) {
+			System.out.println(getNotiz.id + ":" + getNotiz.name);
+		}
+		Notebook workingNotebook = new Notebook(notebookName);
+		listNotes();
+
+		System.out.println("wähle Index der notiz aus.");
+		UserInput input = new UserInput();
+		int id = input.readInputInt();
+		Notiz openNotiz = notizMap.get(id);
+		if (openNotiz == null) {
+			System.out.println("fehler eingabe");
+			return chooseNote();
+		}
+		return openNotiz;
 	}
 
 	private Notiz[] bubbleSort(Notiz[] array, int j){
